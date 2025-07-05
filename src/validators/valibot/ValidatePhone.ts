@@ -17,7 +17,6 @@ export const ValidatePhone = pipeAsync(
    custom(isValidNANPPhoneNumber, 'Invalid Canadian phone number (Valibot)'),
    customAsync(async val => {
       const taken = await isPhoneNumberTaken(val as string);
-      console.log('[Valibot] Uniqueness check result:', taken);
       return !taken;
    }, 'Phone number is already taken (Valibot)')
 );

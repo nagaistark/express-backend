@@ -6,6 +6,8 @@ import {
    optionalAsync,
    pipe,
    pipeAsync,
+   unionAsync,
+   literal,
    minLength,
    email,
    InferOutput,
@@ -28,12 +30,10 @@ import { CreateEmergencyContactVSchema } from '@schemas/EmergencyContact';
 import { ValidTypedModelReference } from '@utils/validModelReference';
 import { DoctorModel } from '@models/Doctor';
 
-/* const ValidDoctorReference = ValidTypedModelReference(DoctorModel, 'doctor');
-
-const PreferredDoctorVSchema = unionAsync([
-   ValidDoctorReference,
-   literal('unspecified'),
-]); */
+const PreferredDoctorVSchema = unionAsync(
+   [ValidTypedModelReference(DoctorModel, 'doctor'), literal('unspecified')],
+   'Preferred doctor must be a valid doctor ID or "unspecified".'
+);
 
 export const CreateClinicalFormVSchema = strictObjectAsync({
    bloodType: fallback(picklist(Object.values(BLOOD_TYPES)), 'unknown'),
@@ -68,7 +68,7 @@ export const CreatePatientVSchema = strictObjectAsync({
    phone: ValidatePhone,
    email: optional(pipe(string(), email())),
    address: AddressVSchema,
-   doctor: optionalAsync(ValidTypedModelReference(DoctorModel, 'doctor')),
+   doctor: PreferredDoctorVSchema,
    clinical: ClinicalFieldVSchema,
    verified: boolean('Boolean is required (Valibot)'),
 });

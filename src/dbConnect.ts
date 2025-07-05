@@ -29,6 +29,9 @@ const connectDB = async (): Promise<void> => {
 
    try {
       await mongoose.connect(URI);
+      console.time('MongoWarmUp');
+      await mongoose.connection.db?.command({ ping: 1 });
+      console.timeEnd('MongoWarmUp');
       console.log('MongoDB connected successfully!');
    } catch (err) {
       console.error('MongoDB initial connection error:', err);

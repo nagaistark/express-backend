@@ -17,37 +17,22 @@ import { ensurePreferredDoctorDefault } from '@middleware/ensurePreferredDoctorD
 const router = Router();
 
 router.get('/:id', getById<IPatient>(PatientModel));
-// router.get('/', getAll<IPatient>('patients'));
-
-// Test Route to inspect the `req.query` object
-router.get('/', (req, res) => {
-   console.log(`Query: ${req.query}`);
-   res.send('Check console');
-});
-
-// Test Route to time the query
-/* router.get('/test-native', async (req, res) => {
-   try {
-      console.time('NativeQuery');
-      const result = await mongoose.connection.db
-         ?.collection('patients')
-         .find({})
-         .toArray();
-      console.timeEnd('NativeQuery');
-      res.status(200).json(result);
-   } catch (err) {
-      res.status(500).json({ error: 'fail' });
-   }
-}); */
+router.get('/', getAll<IPatient>('patients'));
 
 router.post(
    '/',
-   ensurePreferredDoctorDefault, // 🛠 Mutates req.body if doctor is missing
-   ensureClinicalDefault, // 🛠 Mutates req.body if clinical is missing
-   validateBody(CreatePatientVSchema), // ✅ Parses and sanitizes input → res.locals.validatedInput (immutable)
-   createOne<IPatient>(PatientModel) // 🎯 Uses res.locals.validatedInput to save to DB
+   ensurePreferredDoctorDefault, // Mutates req.body if doctor is missing
+   ensureClinicalDefault, // Mutates req.body if clinical is missing
+   validateBody(CreatePatientVSchema), // Parses and sanitizes input → res.locals.validatedInput (immutable)
+   createOne<IPatient>(PatientModel) // Uses res.locals.validatedInput to save to DB
 );
 router.post('/many', createMany<IPatient>(PatientModel));
+router.post('/insert-test', async (req, res) => {
+   const start = Date.now();
+   await mongoose.connection.db?.collection('patients').insertOne(req.body);
+   const total = Date.now() - start;
+   res.json({ inserted: true, ms: total });
+});
 
 router.patch('/:id', updateById<IPatient>(PatientModel));
 router.patch('/', updateMany<IPatient>(PatientModel));

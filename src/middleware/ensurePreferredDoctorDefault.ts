@@ -10,7 +10,6 @@ export function ensurePreferredDoctorDefault(
       req.body.doctor === null ||
       (typeof req.body.doctor === 'string' && req.body.doctor.trim() === '')
    ) {
-      console.log(req.body.doctor);
       req.body.doctor = 'unspecified';
    }
    next();

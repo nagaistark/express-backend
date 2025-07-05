@@ -9,7 +9,6 @@ export async function isPhoneNumberTaken(phone: string): Promise<boolean> {
          DoctorModel.exists({ phone: phone }),
          AdminModel.exists({ phone: phone }),
       ]);
-      console.log('[isPhoneNumberTaken] Result:', { p, d, a });
       return !!(p || d || a);
    } catch (err) {
       console.error('DB error while checking phone number:', err);
