@@ -35,3 +35,5 @@ export const VALID_EMAIL_REGEX =
 
 export const CANADIAN_POSTAL_CODE_REGEX =
    /^[A-Za-z]\d[A-Za-z][ ]?\d[A-Za-z]\d$/i;
+
+export const EMBEDDED_ARRAY_FIELDS = ['emergencyContacts'] as const;

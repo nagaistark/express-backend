@@ -31,10 +31,8 @@ export function validateBody<T, TInput = unknown>(
          if (!result.success) {
             return next(new CustomValidationError(result.issues));
          }
-         // 🔐 Write to a protected, isolated location
-         res.locals.validatedInput = result.output;
-         // Optional: freeze the validated payload to catch future mutation attempts
-         Object.freeze(res.locals.validatedInput);
+         res.locals.validatedInput = result.output; // 🔐 Write to a protected, isolated location
+         Object.freeze(res.locals.validatedInput); // Optional: freeze the validated payload to catch future mutation attempts
          next();
       } catch (err) {
          next(err);

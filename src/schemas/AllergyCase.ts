@@ -3,6 +3,7 @@ import {
    optional,
    picklist,
    string,
+   trim,
    pipe,
    minLength,
    InferOutput,
@@ -11,6 +12,7 @@ import { SEVERITIES } from '@lib/constants';
 import { AllergenModel } from '@models/Allergen';
 import { ValidTypedModelReference } from '@utils/validModelReference';
 import { validateDateField } from '@utils/validateDateField';
+import { PatientModel } from '@models/Patient';
 
 const ValidAllergenReference = ValidTypedModelReference(
    AllergenModel,
@@ -25,7 +27,3 @@ export const CreateAllergyCaseVSchema = strictObjectAsync({
    treatment: optional(string()),
    notes: optional(string()),
 });
-
-export type CreateAllergyCaseOutput = InferOutput<
-   typeof CreateAllergyCaseVSchema
->;

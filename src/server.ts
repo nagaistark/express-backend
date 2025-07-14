@@ -23,7 +23,7 @@ const __dirname = path.dirname(__filename);
 
 // Middleware
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.json());
+app.use(express.json({ limit: '100kb' }));
 app.use(cors({ origin: 'http://ontcamclinic.local:5173' }));
 app.options('/waitlist', cors());
 app.set('etag', false); // Disable default ETag header

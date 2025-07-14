@@ -9,42 +9,11 @@ import { immunizationCaseMSchema } from '@models/Immunization';
 import { medicalCaseMSchema } from '@models/MedicalCase';
 import { emergencyContactMSchema } from '@models/EmergencyContact';
 
-import { IClinicalForm, IPatient } from '@mytypes/Patient';
-
-const clinicalFormMSchema = new Schema<IClinicalForm>(
-   {
-      bloodType: {
-         type: String,
-         required: true,
-         enum: Object.values(BLOOD_TYPES),
-         default: 'unknown',
-      },
-      allergies: {
-         type: [allergyCaseMSchema],
-         required: true,
-         default: [],
-      },
-      immunizations: {
-         type: [immunizationCaseMSchema],
-         required: true,
-         default: [],
-      },
-      medicalHistory: {
-         type: [medicalCaseMSchema],
-         required: true,
-         default: [],
-      },
-      emergencyContacts: {
-         type: [emergencyContactMSchema],
-         required: true,
-         default: [],
-      },
-   },
-   { _id: false }
-);
+import { IPatient } from '@mytypes/Patient';
 
 export const patientMSchema = new Schema<IPatient>(
    {
+      kind: {},
       firstName: { type: String, required: true },
       lastName: { type: String, required: true },
       gender: {
@@ -92,11 +61,34 @@ export const patientMSchema = new Schema<IPatient>(
             message: `Must be a valid ObjectId or "unspecified"`,
          },
       },
-      clinical: {
-         type: clinicalFormMSchema,
+
+      bloodType: {
+         type: String,
+         enum: Object.values(BLOOD_TYPES),
+         default: 'unknown',
          required: true,
-         default: {},
       },
+      allergies: {
+         type: [allergyCaseMSchema],
+         required: true,
+         default: [],
+      },
+      immunizations: {
+         type: [immunizationCaseMSchema],
+         required: true,
+         default: [],
+      },
+      medicalHistory: {
+         type: [medicalCaseMSchema],
+         required: true,
+         default: [],
+      },
+      emergencyContacts: {
+         type: [emergencyContactMSchema],
+         required: true,
+         default: [],
+      },
+
       verified: { type: Boolean, required: true, default: false },
    },
    { timestamps: true, optimisticConcurrency: true }

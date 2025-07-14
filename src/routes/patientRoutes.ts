@@ -27,6 +27,7 @@ router.post(
    createOne<IPatient>(PatientModel) // Uses res.locals.validatedInput to save to DB
 );
 router.post('/many', createMany<IPatient>(PatientModel));
+
 router.post('/insert-test', async (req, res) => {
    const start = Date.now();
    await mongoose.connection.db?.collection('patients').insertOne(req.body);

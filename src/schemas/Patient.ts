@@ -1,9 +1,9 @@
 import {
    string,
+   trim,
    arrayAsync,
    picklist,
    optional,
-   optionalAsync,
    pipe,
    pipeAsync,
    unionAsync,
@@ -13,12 +13,12 @@ import {
    InferOutput,
    strictObjectAsync,
    boolean,
-   transform,
    fallback,
    fallbackAsync,
+   maxLength,
 } from 'valibot';
 
-import { BLOOD_TYPES } from '@lib/constants';
+import { BLOOD_TYPES, EMBEDDED_ARRAY_FIELDS } from '@lib/constants';
 import { ValidatePhone } from '@validators/valibot/ValidatePhone';
 import { ValidateDOB } from '@lib/age';
 import { AddressVSchema } from '@schemas/Address';
@@ -28,6 +28,8 @@ import { CreateImmunizationVSchema } from '@schemas/Immunization';
 import { CreateMedicalCaseVSchema } from '@schemas/MedicalCase';
 import { CreateEmergencyContactVSchema } from '@schemas/EmergencyContact';
 import { ValidTypedModelReference } from '@utils/validModelReference';
+import { extractArrayFields } from '@utils/extractArrayFields';
+import { TypeSafeArrayKeys } from '@utils/validateArrayKeys';
 import { DoctorModel } from '@models/Doctor';
 
 const PreferredDoctorVSchema = unionAsync(
@@ -35,46 +37,44 @@ const PreferredDoctorVSchema = unionAsync(
    'Preferred doctor must be a valid doctor ID or "unspecified".'
 );
 
-export const CreateClinicalFormVSchema = strictObjectAsync({
+export const CreatePatientVSchema = strictObjectAsync({
+   kind: literal('patient'),
+   firstName: pipe(
+      string(),
+      trim(),
+      minLength(1, 'First name is required (Valibot)')
+   ),
+   lastName: pipe(
+      string(),
+      trim(),
+      minLength(1, 'Last name is required (Valibot)')
+   ),
+   gender: GenderVSchema,
+   dateOfBirth: ValidateDOB,
+   phone: ValidatePhone,
+   email: optional(pipe(string(), trim(), email())),
+   address: AddressVSchema,
+   doctor: PreferredDoctorVSchema,
+
    bloodType: fallback(picklist(Object.values(BLOOD_TYPES)), 'unknown'),
    allergies: fallbackAsync(arrayAsync(CreateAllergyCaseVSchema), []),
    immunizations: fallbackAsync(arrayAsync(CreateImmunizationVSchema), []),
    medicalHistory: fallbackAsync(arrayAsync(CreateMedicalCaseVSchema), []),
    emergencyContacts: fallbackAsync(
-      arrayAsync(CreateEmergencyContactVSchema),
+      pipeAsync(
+         arrayAsync(CreateEmergencyContactVSchema),
+         maxLength(3, 'The Emergency Contacts array must not exceed 3 elements')
+      ),
       []
    ),
-});
-
-export const ClinicalFieldVSchema = pipeAsync(
-   CreateClinicalFormVSchema,
-   transform(
-      value =>
-         value ?? {
-            bloodType: 'unknown',
-            allergies: [],
-            immunizations: [],
-            medicalHistory: [],
-            emergencyContacts: [],
-         }
-   )
-);
-
-export const CreatePatientVSchema = strictObjectAsync({
-   firstName: pipe(string(), minLength(1, 'First name is required (Valibot)')),
-   lastName: pipe(string(), minLength(1, 'Last name is required (Valibot)')),
-   gender: GenderVSchema,
-   dateOfBirth: ValidateDOB,
-   phone: ValidatePhone,
-   email: optional(pipe(string(), email())),
-   address: AddressVSchema,
-   doctor: PreferredDoctorVSchema,
-   clinical: ClinicalFieldVSchema,
    verified: boolean('Boolean is required (Valibot)'),
 });
 
-export type CreateClinicalFormOutput = InferOutput<
-   typeof CreateClinicalFormVSchema
->;
+export const patientArrayKeys: actualPatientArrayKeys[] = [
+   'allergies',
+   'immunizations',
+   'medicalHistory',
+];
 
+type actualPatientArrayKeys = TypeSafeArrayKeys<CreatePatientOutput>;
 export type CreatePatientOutput = InferOutput<typeof CreatePatientVSchema>;

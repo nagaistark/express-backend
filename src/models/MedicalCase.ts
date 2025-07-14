@@ -5,7 +5,7 @@ import { IMedicalCase } from '@mytypes/MedicalCase';
 export const medicalCaseMSchema = new Schema<IMedicalCase>(
    {
       diagnosis: {
-         type: Schema.Types.ObjectId,
+         type: String,
          ref: 'Diagnosis',
          required: true,
       },
@@ -27,7 +27,7 @@ export const medicalCaseMSchema = new Schema<IMedicalCase>(
          },
       },
       diagnosedBy: {
-         type: Schema.Types.ObjectId,
+         type: String,
          ref: 'Doctor',
          required: true,
       },

@@ -1,49 +1,6 @@
 import { Request, Response, NextFunction, RequestHandler } from 'express';
 import { Model } from 'mongoose';
-
 import { getValidatedInput } from '@utils/getValidatedInput';
-
-/* export function createOne<T>(Entity: Model<T>): RequestHandler {
-   return async (
-      req: Request,
-      res: Response,
-      next: NextFunction
-   ): Promise<void> => {
-      try {
-         const newDoc = new Entity(req.body);
-         const saved = await newDoc.save();
-         res.status(201).json(saved);
-      } catch (err) {
-         next(err);
-      }
-   };
-} */
-
-/* export function createOne<T>(Entity: Model<T>): RequestHandler {
-   return async (
-      req: Request,
-      res: Response,
-      next: NextFunction
-   ): Promise<void> => {
-      try {
-         const validated = res.locals.validatedInput;
-
-         // Safety check to make sure validation run
-         if (!validated) {
-            res.status(500).json({
-               error: 'Validation middleware missing or misconfigured',
-            });
-            return;
-         }
-
-         const newDoc = new Entity(validated);
-         const saved = await newDoc.save();
-         res.status(201).json(saved);
-      } catch (err) {
-         next(err);
-      }
-   };
-} */
 
 export function createOne<T>(Entity: Model<T>): RequestHandler {
    return async (
