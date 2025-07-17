@@ -6,8 +6,6 @@ import {
 import { EMBEDDED_ARRAY_FIELDS } from '@lib/constants';
 import { extractArrayFields } from '@utils/extractArrayFields';
 
-import { CreatePatientVSchema, patientArrayKeys } from '@schemas/Patient';
-
 // Generic utility to find all keys pointing to array types
 type ArrayKeys<T> = Extract<
    {
@@ -31,30 +29,40 @@ export type TypeSafeArrayKeys<TOutput> = Exclude<
  */
 export function verifyArrayKeySync<
    TSchema extends BaseSchema<any, any, any> | BaseSchemaAsync<any, any, any>,
-   TExpectedKeys extends readonly TypeSafeArrayKeys<InferOutput<TSchema>>[],
->(schema: TSchema, staticKeys: TExpectedKeys): true {
-   // Get the array fields from the schema at runtime
-   const runtimeKeys = extractArrayFields(schema, {
-      EXCEPTIONS: [...EMBEDDED_ARRAY_FIELDS],
-   });
+   TExpectedKeys extends readonly TypeSafeArrayKeys<
+      InferOutput<TSchema>
+   >[] = [],
+>(schema: TSchema, staticKeys?: TExpectedKeys): true {
+   const fallbackKeys = [] as unknown as TExpectedKeys;
+   const runtimeKeys = extractArrayFields(schema);
+   const hardCodedKeys = staticKeys ?? fallbackKeys;
 
-   const runtimeSet = new Set(runtimeKeys);
-   const staticSet = new Set(staticKeys);
-
-   // Find keys that exist in one list but not the other
-   const missingFromStatic = [...runtimeSet].filter(
-      key => !staticSet.has(key as TExpectedKeys[number])
-   );
-   const missingFromRuntime = [...staticSet].filter(
-      key => !runtimeSet.has(key)
+   const difference = symmetricDifference(
+      Array.from(hardCodedKeys),
+      Array.from(runtimeKeys)
    );
 
-   if (missingFromStatic.length > 0 || missingFromRuntime.length > 0) {
+   if (difference.length > 0) {
       throw new Error(
-         `Schema-to-type mismatch detected for "${(schema as any).type}":
-         - Keys in schema but not in type: [${missingFromStatic.join(', ')}]
-         - Keys in type but not in schema: [${missingFromRuntime.join(', ')}]`
+         `[ArrayKeyMismatch] ❌ Hardcoded keys: [${hardCodedKeys.join(', ')}] — Extracted keys: [${runtimeKeys.join(', ')}] — Difference: [${difference.join(', ')}]`
       );
    }
+
+   if (staticKeys === undefined && runtimeKeys.length > 0) {
+      console.warn(
+         `[SchemaAudit] ⚠️ Missing HCArrayKeys for schema with array fields: [${runtimeKeys.join(
+            ', '
+         )}]`
+      );
+   }
+
    return true;
+}
+
+// === Helper: symmetricDifference ===
+
+function symmetricDifference<T extends string>(a: T[], b: T[]): T[] {
+   const aSet = new Set(a);
+   const bSet = new Set(b);
+   return [...a.filter(k => !bSet.has(k)), ...b.filter(k => !aSet.has(k))];
 }
